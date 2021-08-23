@@ -100,9 +100,7 @@ if __name__ == "__main__":
     print(len( list(social_adj_lists.keys())),  len(list(history_u_lists.keys())))
 
     
-    #data splitting 
-
-    ##training
+##training
 
 def train(model, device, train_loader, optimizer, epoch, best_rmse, best_mae):
     model.train()
@@ -133,10 +131,9 @@ def test(model, device, test_loader):
             target.append(list(tmp_target.data.cpu().numpy()))
     tmp_pred = np.array(sum(tmp_pred, []))
     target = np.array(sum(target, []))
-    expected_mse = mean_squared_error(tmp_pred, target)
+    expected_rmse = sqrt(mean_squared_error(tmp_pred, target))
     mae = mean_absolute_error(tmp_pred, target)
-    expected_rmse = mean_squared_error(expected_mse)
-    return expected_mse, expected_rmse, mae
+    return expected_rmse, mae
 
 
 if __name__ == "__main__":
@@ -213,7 +210,7 @@ if __name__ == "__main__":
         train_losses.append(tr_loss)
 
         # please add the validation set to tune the hyper-parameters based on your datasets.
-        val_loss , val_rmse, val_mae = test(model, device, test_loader)
+        val_rmse, val_mae = test(model, device, test_loader)
 
         # early stopping 
         if best_rmse > val_rmse:
@@ -222,7 +219,7 @@ if __name__ == "__main__":
             endure_count = 0
         else:
             endure_count += 1
-        print("Epoch %d , training loss: %.4f,  val loss: %.4f, val rmse: %.4f, val mae:%.4f " % (tr_loss, val_loss, val_rmse, val_mae))
+        print("Epoch %d , training loss: %.4f, val rmse: %.4f, val mae:%.4f " % (tr_loss, val_rmse, val_mae))
 
         if endure_count > 5:
             break
@@ -243,23 +240,4 @@ if __name__ == "__main__":
         f.close()
         """
     
-
-    
-
-        """
-        best_rec_0 = max(recs[:, 0])
-        idx = list(recs[:, 0]).index(best_rec_0)
-
-        save_path = '%soutput/%s/%s.result' % (args['results_path'], args['dataset'])
-        f = open(save_path, 'a')
-
-        f.write(
-            'embed_size=%d, lr=%.4f, layer_size=%s, node_dropout=%s, mess_dropout=%s, regs=%s, adj_type=%s\n\t%s\n'
-            % (args['embed_size'], 0.0001, args['layer_size'], args['node_dropout'], args['mess_dropout'], args['regs'],
-            args['adj_type'], final_perf))
-        
-        f.close()
-        """
-    
-
     
