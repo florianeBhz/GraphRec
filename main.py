@@ -34,39 +34,6 @@ args = parser.parse_args()
 
 
 ##training
-"""
-def train_old(epoch,device,optimizer,criterion,model,train_loader):
-    total_l = 0
-    for (uids, iids, labels, u_items, u_users, u_users_items, i_users, u_items_r,u_users_items_r, i_users_r) in train_loader:
-
-        uids = uids.to(device)
-        iids = iids.to(device)
-        labels = labels.to(device)
-        u_items = u_items.to(device)
-        u_users = u_users.to(device)
-        u_users_items = u_users_items.to(device)
-        i_users = i_users.to(device)
-
-        i_users_r = torch.tensor(i_users_r).to(device)
-        u_items_r = torch.tensor(u_items_r).to(device)
-        u_users_items_r = torch.tensor(u_users_items_r).to(device)
-
-
-        optimizer.zero_grad()
-        outputs = model(uids, iids, u_items, u_users, u_users_items, i_users,u_items_r,u_users_items_r,i_users_r).squeeze()
-
-        print(outputs[:3],labels[:3])
-
-        lss = criterion(outputs,labels.float() )
-
-        lss.backward()
-        optimizer.step()
-
-        print(lss.cpu().detach().numpy())
-
-        total_l += lss.cpu().detach().numpy()
-
-"""
 
 def train(model, device, train_loader, optimizer, epoch, best_rmse, best_mae):
     model.train()
@@ -118,7 +85,9 @@ if __name__ == "__main__":
 
     num_users = history_u_lists.__len__()
     num_items = history_v_lists.__len__()
-    num_ratings = ratings_list.__len__()
+    num_ratings = ratings_list.__len__()+1
+
+    print(num_ratings)
 
     print(min(train_u),max(train_u))
     print(min(train_v),max(train_v))
@@ -141,7 +110,7 @@ if __name__ == "__main__":
     valset = torch.utils.data.TensorDataset(torch.LongTensor(val_u), torch.LongTensor(val_v),
                                              torch.FloatTensor(val_r))
 
-    train_loader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True)
+    train_loader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True,drop_last=True )
     test_loader = torch.utils.data.DataLoader(testset, batch_size=args.test_batch_size, shuffle=True)
     val_loader = torch.utils.data.DataLoader(valset, batch_size=args.test_batch_size, shuffle=True)
 
@@ -177,7 +146,7 @@ if __name__ == "__main__":
         # please add the validation set to tune the hyper-parameters based on your datasets.
         val_loss , val_rmse, val_mae = test(model, device, val_loader)
 
-        # early stopping (no validation set in toy dataset)
+        # early stopping 
         if best_rmse > val_rmse:
             best_rmse = val_rmse
             best_mae = val_mae
@@ -205,58 +174,6 @@ if __name__ == "__main__":
         
         f.close()
         """
-    """
-    with open(args.datadir + 'dataset.pkl', 'rb') as f:
-        train_dataset = pickle.load(f).to_numpy()
-        val_dataset = pickle.load(f).to_numpy() 
-        test_dataset = pickle.load(f).to_numpy()
-
-    with open(args.datadir + 'list.pkl', 'rb') as f:
-        u_items_list = pickle.load(f)
-        u_users_list = pickle.load(f)
-        u_items_ratings = pickle.load(f)
-        i_users_ratings = pickle.load(f)
-        u_users_items_list = pickle.load(f)
-        u_users_items_ratings = pickle.load(f)
-        i_users_list = pickle.load(f)
-        (user_count, item_count, rate_count) = pickle.load(f)
-
     
-    #data loading
-    trainset = torch.utils.data.TensorDataset(torch.LongTensor(train_dataset[:,0]), torch.LongTensor(train_dataset[:,1]),
-                                                torch.FloatTensor(train_dataset[:,2]))
-    val_dataset = torch.utils.data.TensorDataset(torch.LongTensor(val_dataset[:,0]), torch.LongTensor(val_dataset[:,1]),
-                                                torch.FloatTensor(val_dataset[:,2]))
-    test_dataset = torch.utils.data.TensorDataset(torch.LongTensor(test_dataset[:,0]), torch.LongTensor(test_dataset[:,1]),
-                                                torch.FloatTensor(test_dataset[:,2]))
-
-
-
-     trainset = torch.utils.data.TensorDataset(torch.LongTensor(train_u), torch.LongTensor(train_v),
-                                              torch.FloatTensor(train_r))
-    testset = torch.utils.data.TensorDataset(torch.LongTensor(test_u), torch.LongTensor(test_v),
-                                             torch.FloatTensor(test_r))
-
-    valset = torch.utils.data.TensorDataset(torch.LongTensor(val_u), torch.LongTensor(val_v),
-                                             torch.FloatTensor(val_r))
-
-    train_loader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True)
-    test_loader = torch.utils.data.DataLoader(testset, batch_size=args.test_batch_size, shuffle=True)
-    val_loader = torch.utils.data.DataLoader(valset, batch_size=args.test_batch_size, shuffle=True)
-
-
-
-    trainset_reco = RecoDataset(train_dataset,'list.pkl','data/')
-    val_set_reco = RecoDataset(val_dataset,'list.pkl','data/')
-    test_set_reco = RecoDataset(test_dataset,'list.pkl','data/')
-
-    train_loader = DataLoader(trainset_reco, batch_size=args.batch_size, shuffle=True, collate_fn=collate_fn)
-    val_loader = DataLoader(val_set_reco, batch_size=args.batch_size, shuffle=False,collate_fn=collate_fn)
-    test_loader = DataLoader(test_set_reco, batch_size=args.test_batch_size, shuffle=False,collate_fn=collate_fn)
-
-
-    train(0)
-    
-    """
 
     
