@@ -45,10 +45,10 @@ def train(model, device, train_loader, optimizer, epoch, best_rmse, best_mae):
         loss.backward(retain_graph=True)
         optimizer.step()
         running_loss += loss.item()
-        #if i % 100 == 0:
-        #    print('[%d, %5d] loss: %.3f, The best rmse/mae: %.6f / %.6f' % (
-        #        epoch, i, running_loss / 100, best_rmse, best_mae))
-        #    running_loss = 0.0
+        if i % 100 == 0:
+            print('[%d, %5d] loss: %.3f, The best rmse/mae: %.6f / %.6f' % (
+                epoch, i, running_loss / 100, best_rmse, best_mae))
+            running_loss = 0.0
     return running_loss
 
 
@@ -157,7 +157,6 @@ if __name__ == "__main__":
 
         if endure_count > 5:
             break
-
 
 
         """

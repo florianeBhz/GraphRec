@@ -63,7 +63,7 @@ class UserModeling(nn.Module):
 
 
 
-    def forward(self,nodes_u,history_u_lists_batch, u_users_list,history_ur_lists_batch):
+    def forward(self,nodes_u,history_u_lists_batch, social_adj_lists_batch,history_ur_lists_batch):
 
         embed_matrix_I = torch.empty(len(history_u_lists_batch), self.embed_dim, dtype=torch.float).to(self.device)
         embed_matrix_S = torch.empty(len(nodes_u), self.embed_dim, dtype=torch.float).to(self.device)
@@ -72,7 +72,6 @@ class UserModeling(nn.Module):
             i_v_list = history_u_lists_batch[i]
             i_v_list_len = len(i_v_list)
             i_v_label = history_ur_lists_batch[i]
-
 
             qa = self.embed_i(torch.LongTensor(i_v_list))
             pi = self.embed_u(torch.LongTensor([nodes_u[i]]))
@@ -105,10 +104,10 @@ class UserModeling(nn.Module):
             
             embed_matrix_S[i] = hi_S
 
-            c1 =  torch.cat((embed_matrix_I,embed_matrix_S),1)
+        c1 =  torch.cat((embed_matrix_I,embed_matrix_S),1)
 
-            hi = self.mlp(c1)
-    
+        hi = self.mlp(c1)
+
         return hi
 
 
@@ -142,15 +141,15 @@ class ItemModeling(nn.Module):
 
             fjt = self.gu(torch.cat((pt,er),1))
 
-            mu_jt = self.att(fjt, qj, j_u_list_len) #lignes 18 et 19
+            mu_jt = self.att(fjt, qj, j_u_list_len) #Eq 18 et 19
 
             ###
 
-            zj = torch.mm(fjt.t(), mu_jt).t() #ligne 17
+            zj = torch.mm(fjt.t(), mu_jt).t() #Eq 17
 
             embed_matrix[j] = zj
 
-            return zj
+        return embed_matrix
 
 
 
@@ -210,15 +209,16 @@ class GraphRec(nn.Module):
             history_v_lists_batch.append(self.history_v_lists[int(v)])
             history_vr_lists_batch.append(self.history_vr_lists[int(v)])
 
+        hi = self.model_user(nodes_u,history_u_lists_batch,social_adj_lists_batch,history_ur_lists_batch) 
 
-        hi = self.model_user(nodes_u,history_u_lists_batch,social_adj_lists_batch,history_ur_lists_batch) #u_items_list, u_users_list,u_items_r,u_users_items,u_users_items_r,i_users_list,i_users_r)
-
-        zj = self.model_item(nodes_v,history_v_lists_batch, history_vr_lists_batch) #nodes_i,i_users_list,i_users_r)
+        zj = self.model_item(nodes_v,history_v_lists_batch, history_vr_lists_batch) 
 
         hi = F.relu(self.bn1(self.w_ur1(hi)))
         hi = F.dropout(hi, training=self.training)
         hi = self.w_ur2(hi)
+
         zj = F.relu(self.bn2(self.w_vr1(zj)))
+        zj = F.relu(self.w_vr1(zj))
         zj = F.dropout(zj, training=self.training)
         zj = self.w_vr2(zj)
 
@@ -229,6 +229,8 @@ class GraphRec(nn.Module):
         x = F.dropout(x, training=self.training)
         scores = self.w_uv3(x)
         return scores.squeeze()
+
+
 
     def loss(self, nodes_u, nodes_v, labels_list):
         scores = self.forward(nodes_u, nodes_v)
