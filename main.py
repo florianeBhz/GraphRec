@@ -159,7 +159,6 @@ if __name__ == "__main__":
             break
 
 
-
         """
         best_rec_0 = max(recs[:, 0])
         idx = list(recs[:, 0]).index(best_rec_0)
