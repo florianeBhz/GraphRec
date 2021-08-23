@@ -1,4 +1,4 @@
-# GraphRec
+# GraphRecgit
 
 ## GraphRec: Graph Neural Networks for Social Recommendation
 
