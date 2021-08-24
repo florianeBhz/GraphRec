@@ -4,7 +4,6 @@ from torch.nn import init
 import torch.nn.functional as F
 import numpy as np
 
-# a simple MLP class
 class MLP(nn.Module):
     def __init__(self,input_dim,output_dim):
         super(MLP,self).__init__()
@@ -27,7 +26,8 @@ class Attention(nn.Module):
         self.input_dim = input_dim
         #input dim is 2* embedding dim because of concatenation
         self.att1 = nn.Linear(self.input_dim , self.input_dim//2)
-        self.att2 = nn.Linear(self.input_dim //2, 1)
+        self.att2 = nn.Linear(self.input_dim //2, self.input_dim //2)
+        self.att3 = nn.Linear(self.input_dim //2, 1)
         self.softmax = nn.Softmax(0)
 
     def forward(self, neighs_reps, u_rep, num_neighs):
@@ -38,11 +38,12 @@ class Attention(nn.Module):
         #
         alpha_ia_star = F.relu(self.att1(alpha_ia_star))
         alpha_ia_star = F.dropout(alpha_ia_star, training=self.training)
-        alpha_ia_star = self.att2(alpha_ia_star) #Eq 5
+        alpha_ia_star = F.relu(self.att2(alpha_ia_star)) 
+        alpha_ia_star = F.dropout(alpha_ia_star, training=self.training)
+        alpha_ia_star = self.att3(alpha_ia_star)#Eq 5
         alpha_ia = F.softmax(alpha_ia_star, dim=0) #Eq 6
-        return alpha_ia
-
-
+        return alpha_ia    
+    
 #perform user modeling in two steps for batched users
 class UserModeling(nn.Module):
     def __init__(self,device,embed_u, embed_i, embed_r,social_adj_lists, embed_dim):

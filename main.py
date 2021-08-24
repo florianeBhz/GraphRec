@@ -69,36 +69,6 @@ def test(model, device, test_loader):
     expected_rmse = mean_squared_error(expected_mse)
     return expected_mse, expected_rmse, mae
 
-
-if __name__ == "__main__":
-
-    dir_data = './data/'
-    path_data = args.datadir+args.dataset+"_dataset.pickle"
-
-    if not os.path.exists(path_data):
-        preprocess(args.datadir, args.dataset,args.test)
-
-    
-    data_file = open(path_data, 'rb')
-    history_u_lists, history_ur_lists, history_v_lists, history_vr_lists, train_u, train_v, train_r, test_u, test_v, test_r, val_u, val_v, val_r, social_adj_lists, ratings_list = pickle.load(
-        data_file)
-
-    num_users = history_u_lists.__len__()
-    num_items = history_v_lists.__len__()
-    num_ratings = ratings_list.__len__()+1
-
-    print(num_ratings)
-
-    print(min(train_u),max(train_u))
-    print(min(train_v),max(train_v))
-
-    print(min(list(history_u_lists.keys())), max(list(history_u_lists.keys())))
-    print(min(list(social_adj_lists.keys())), max(list(social_adj_lists.keys())))
-
-    print(len(train_u), len(list(social_adj_lists.keys())))
-    print(len(np.intersect1d(list(history_u_lists.keys()), list(social_adj_lists.keys()))))
-    print(len( list(social_adj_lists.keys())),  len(list(history_u_lists.keys())))
-
     
 ##training
 
@@ -219,7 +189,7 @@ if __name__ == "__main__":
             endure_count = 0
         else:
             endure_count += 1
-        print("Epoch %d , training loss: %.4f, val rmse: %.4f, val mae:%.4f " % (tr_loss, val_rmse, val_mae))
+        print("Epoch %d , training loss: %.4f, val rmse: %.4f, val mae:%.4f " % (epoch,tr_loss, val_rmse, val_mae))
 
         if endure_count > 5:
             break
